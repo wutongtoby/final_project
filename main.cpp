@@ -163,7 +163,7 @@ void ping_WalkUntil(float distance, bool Is_Forward)
 
 void lr_turn(bool IsLeft)
 {
-    if (Is_Left) {
+    if (IsLeft) {
         car.servo0.set_speed_by_cm(-10);
         car.servo1.set_speed_by_cm(-10);
         car.controlWheel();
@@ -222,9 +222,9 @@ void identify_matrix(void)
     // mission complete
     for (int i = 0; i < 5; i++) {
         Led = 0;
-        wait(0.2);
+        wait(0.1);
         Led = 1;
-        wait(0.2);
+        wait(0.1);
     }
     other_mission = false;
 }
@@ -248,30 +248,84 @@ void identify_picture(void)
     // mission complete
     for (int i = 0; i < 5; i++) {
         Led = 0;
-        wait(0.2);
+        wait(0.1);
         Led = 1;
-        wait(0.2);
+        wait(0.1);
     }
     other_mission = false;
 }
 
-void identify_get(void)
+void identify_object(void)
 {
-  mission_gap = 1;
-  redLED = 0;
-  // send quest
-  char s[10];
-  sprintf(s, "identify");
-  uart.puts(s);
-  wait(5);
-  // fetch information
-  if (uart.readable())
-  {
-    char recv = uart.getc();
-    xbee.printf("80661\r\n");
-    xbee.putc(recv);
-    xbee.printf("\r\n");
-  }
-  mission_gap = 0;
-  redLED = 1;
+    other_mission = true;
+
+    float value[3];
+    float difference_1, difference_2;
+
+    // turn right, for 30 deg
+    car.servo0.set_speed_by_cm(10);
+    car.servo1.set_speed_by_cm(10);
+    car.controlWheel();
+    wait(1.12 / 3);
+    car.stop();
+    value[0] = float(ping);
+    wait(0.5);
+
+    // turn left for 30 deg 
+    car.servo0.set_speed_by_cm(-10);
+    car.servo1.set_speed_by_cm(-10);
+    car.controlWheel();
+    wait(1.12 / 3);
+    car.stop();
+    value[1] = float(ping);
+    wait(0.5);
+
+    // turn left for 30 deg 
+    car.servo0.set_speed_by_cm(-10);
+    car.servo1.set_speed_by_cm(-10);
+    car.controlWheel();
+    wait(1.12 / 3);
+    car.stop();
+    value[2] = float(ping);
+    wait(0.5);
+
+    // turn left for 30 deg 
+    car.servo0.set_speed_by_cm(-10);
+    car.servo1.set_speed_by_cm(-10);
+    car.controlWheel();
+    wait(1.12 / 3);
+    car.stop();
+    value[0] = float(ping);
+    wait(0.5);
+
+    // turn right for 30 deg, back to origin
+    car.servo0.set_speed_by_cm(10);
+    car.servo1.set_speed_by_cm(10);
+    car.controlWheel();
+    wait(1.12 / 3);
+    car.stop();
+    
+    difference_1 = value[1] - value[0];
+    
+    if (difference_1 <= 0)
+        xbee.printf("M\r\n");
+    else {
+        if (difference_2 >= 0)
+            xbee.printf("Right triangle\r\n");
+        else {
+            if (abs(difference_1) - abs(difference_2) < 2)
+                xbee.printf("Square\r\n");
+            else 
+                xbee.printf("Equal triangle\r\n");
+        }
+    }
+
+    // mission complete
+    for (int i = 0; i < 5; i++) {
+        Led = 0;
+        wait(0.1);
+        Led = 1;
+        wait(0.1);
+    }
+    other_mission = false;
 }
