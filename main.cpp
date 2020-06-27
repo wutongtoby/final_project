@@ -29,11 +29,14 @@ int main(void)
     car.setCalibTable(11, pwm_table0, speed_table0, 11, pwm_table1, speed_table1);
 
     // let both servo go straight with the speed, 
+    
+    
     car.goStraightCalib(10);
     while (1) {
-        if (float(ping) <= 50)
+        if (float(ping) <= 15)
             break;
         wait(0.1);
     };
+    
     car.stop();
 }
