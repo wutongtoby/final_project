@@ -205,7 +205,7 @@ void identify_matrix(void)
         int count = 0;
         
         while (1) {
-            temp = uart.getc();
+            temp = OpenMv.getc();
             if (temp != '\r') {
                 rev[counter++] = temp;
             }
@@ -237,12 +237,14 @@ void identify_picture(void)
     sprintf(s, "image_classification");
     OpenMv.puts(s);
     wait(5);
+    
     // will get only one number
     if (uart.readable()) {
         char recv = OpenMv.getc();
         xbee.putc(recv);
         xbee.printf("\r\n");
     }
+
     // mission complete
     for (int i = 0; i < 5; i++) {
         Led = 0;
@@ -252,6 +254,7 @@ void identify_picture(void)
     }
     other_mission = false;
 }
+
 void identify_get(void)
 {
   mission_gap = 1;
