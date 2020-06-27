@@ -2,11 +2,17 @@
 import pyb
 import sensor, image, time, os, tf, math
 
+RED_LED_PIN = 1
+BLUE_LED_PIN = 3
+pyb.LED(RED_LED_PIN).off()
+pyb.LED(BLUE_LED_PIN).off()
+
 uart = pyb.UART(3,9600,timeout_char=1000)
 uart.init(9600,bits=8,parity = None, stop=1, timeout_char=1000)
 tmp = ""
 
 def image_classification():
+    pyb.LED(BLUE_LED_PIN).on()
     sensor.reset()                         # Reset and initialize the sensor.
     sensor.set_pixformat(sensor.RGB565)    # Set pixel format to RGB565 (or GRAYSCALE)
     sensor.set_framesize(sensor.QVGA)      # Set frame size to QVGA (?x?)
@@ -20,20 +26,23 @@ def image_classification():
     for obj in tf.classify('/model_demo.tflite',img, min_scale=1.0, scale_mul=0.5, x_overlap=0.0, y_overlap=0.0):
         img.draw_rectangle(obj.rect())
         img.draw_string(obj.x()+3, obj.y()-1, labels[obj.output().index(max(obj.output()))], mono_space = False)
+    pyb.LED(BLUE_LED_PIN).off()
     return labels[obj.output().index(max(obj.output()))]
 
 def data_matrix():
+    pyb.LED(RED_LED_PIN).on()
     sensor.reset()
     sensor.set_pixformat(sensor.RGB565)
     sensor.set_framesize(sensor.QVGA)
     sensor.skip_frames(time = 2000)
     sensor.set_auto_gain(False)  # must turn this off to prevent image washout...
     sensor.set_auto_whitebal(False)  # must turn this off to prevent image washout...
-    
+
     img = sensor.snapshot()
     img.lens_corr(1.8) # strength of 1.8 is good for the 2.8mm lens.
 
     matrices = img.find_datamatrices()
+    pyb.LED(RED_LED_PIN).off()
     for matrix in matrices:
         return str((180 * matrix.rotation()) / math.pi)
     return "no_matrix"
@@ -44,15 +53,18 @@ while(1):
     a = uart.readline()
     if a is not None:
         tmp += a.decode()
+    else:
+        print("none")
 
     if tmp == "image_classification":
+        print(tmp)
         tmp = ""
         label = image_classification()
         uart.write(label.encode())
-        
+
     if tmp == "data_matrix":
         last_angle = data_matrix() + "\r"
-        
+
     if tmp == "stop":
         tmp = ""
         uart.write(last_angle.encode())

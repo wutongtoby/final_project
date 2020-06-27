@@ -36,11 +36,13 @@ void identify_matrix(void);
 void identify_picture(void);
 void identify_object(void); 
 
+// for the log message
 bool other_mission = false;
 void log(void);
 Thread t;
 char log_message;
 
+// for car control
 void ping_WalkUntil(float distance);
 void lr_turn(bool Is_left);
 
@@ -48,7 +50,7 @@ int main(void)
 {
     // set the baud rate for both
     xbee.baud(9600);
-    OpemMv.baud(9600);
+    OpenMv.baud(9600);
     t.start(&log);
 
     // set the LED
@@ -207,7 +209,7 @@ void identify_matrix(void)
         while (1) {
             temp = OpenMv.getc();
             if (temp != '\r') {
-                rev[counter++] = temp;
+                rev[count++] = temp;
             }
             else {
                 break;
@@ -239,7 +241,7 @@ void identify_picture(void)
     wait(5);
     
     // will get only one number
-    if (uart.readable()) {
+    if (OpenMv.readable()) {
         char recv = OpenMv.getc();
         xbee.putc(recv);
         xbee.printf("\r\n");
