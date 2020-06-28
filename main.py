@@ -53,18 +53,20 @@ while(1):
     a = uart.readline()
     if a is not None:
         tmp += a.decode()
-    else:
-        print("none")
+        print(tmp)
+    #else:
+     #   print("none")
 
     if tmp == "image_classification":
-        print(tmp)
         tmp = ""
         label = image_classification()
+        print(label)
         uart.write(label.encode())
 
     if tmp == "data_matrix":
         last_angle = data_matrix() + "\r"
 
-    if tmp == "stop":
+    if tmp == "data_matrixstop":
         tmp = ""
+        print(last_angle.encode())
         uart.write(last_angle.encode())
