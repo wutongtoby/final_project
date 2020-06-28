@@ -4,6 +4,8 @@ import sensor, image, time, os, tf, math
 
 RED_LED_PIN = 1
 BLUE_LED_PIN = 3
+GREEN_LED_PIN = 2
+pyb.LED(GREEN_LED_PIN).on()
 pyb.LED(RED_LED_PIN).off()
 pyb.LED(BLUE_LED_PIN).off()
 
@@ -12,6 +14,7 @@ uart.init(9600,bits=8,parity = None, stop=1, timeout_char=1000)
 tmp = ""
 
 def image_classification():
+    pyb.LED(GREEN_LED_PIN).off()
     pyb.LED(BLUE_LED_PIN).on()
     sensor.reset()                         # Reset and initialize the sensor.
     sensor.set_pixformat(sensor.RGB565)    # Set pixel format to RGB565 (or GRAYSCALE)
@@ -27,9 +30,11 @@ def image_classification():
         img.draw_rectangle(obj.rect())
         img.draw_string(obj.x()+3, obj.y()-1, labels[obj.output().index(max(obj.output()))], mono_space = False)
     pyb.LED(BLUE_LED_PIN).off()
+    pyb.LED(GREEN_LED_PIN).on()
     return labels[obj.output().index(max(obj.output()))]
 
 def data_matrix():
+    pyb.LED(GREEN_LED_PIN).off()
     pyb.LED(RED_LED_PIN).on()
     sensor.reset()
     sensor.set_pixformat(sensor.RGB565)
@@ -43,6 +48,7 @@ def data_matrix():
 
     matrices = img.find_datamatrices()
     pyb.LED(RED_LED_PIN).off()
+    pyb.LED(GREEN_LED_PIN).on()
     for matrix in matrices:
         return str((180 * matrix.rotation()) / math.pi)
     return "no_matrix"

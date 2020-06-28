@@ -32,14 +32,14 @@ Serial OpenMv(D12, D11); // Tx, Rx
 // LED
 DigitalOut Led(LED1);
 
-void identify_matrix(void); 
-void identify_picture(void);
-void identify_object(void); 
+void identify_matrix(void); // A
+void identify_picture(void); // B
+void identify_object(void);  // C
 
 // for the log message
 bool other_mission = false;
 void log(void);
-Thread t;
+Thread t(osPriorityHigh);
 char log_message;
 
 // for car control
@@ -53,6 +53,7 @@ int main(void)
     OpenMv.baud(9600);
     t.start(&log);
 
+    xbee.printf("Begin\r\n");
     // set the LED
     Led = 1;
 
@@ -69,141 +70,149 @@ int main(void)
     // start 
     
     // get the information of matrix at 25cm
-    ping_WalkUntil(25, FORWARD);
-    log_message = 'F';
-    identify_matrix();
-    wait(1.0);
+    //log_message = 'F';
+    //ping_WalkUntil(25, FORWARD);
+
+    //identify_matrix();
+    //wait(1.0);
     
     // go until at the front of wall
-    ping_WalkUntil(15, FORWARD);
     log_message = 'F';
+    ping_WalkUntil(15, FORWARD);
     
-    lr_turn(LEFT);
+    
     log_message = 'L';
+    lr_turn(LEFT);
     wait(0.5);
 
     // go until at the target place, then turn right + go backward
-    car.goStraightCalib(10);
     log_message = 'F';
+    car.goStraightCalib(10);
     wait(4.5);
     
-    lr_turn(RIGHT);
+    log_message = 'S';
+    car.stop()
+    wait(1);
+    
     log_message = 'R';
+    lr_turn(RIGHT);
     wait(0.5);
     
-    ping_WalkUntil(35, BACKWARD);
     log_message = 'B';
+    ping_WalkUntil(35, BACKWARD);
     wait(0.5);
 
     // go to the next mission
-    ping_WalkUntil(15, FORWARD);
     log_message = 'F';
-
-    lr_turn(LEFT);
-    log_message = 'L';
-    wait(0.5);
+    ping_WalkUntil(15, FORWARD);
     
 
+    log_message = 'L';
+    lr_turn(LEFT);
+    wait(0.5);
+    
+    log_message = 'F';
     car.goStraightCalib(10);
-    log_message = 'F';
     wait(5.0);
-    ping_WalkUntil(5, FORWARD);
+
     log_message = 'F';
+    ping_WalkUntil(5, FORWARD);
     wait(0.5);
 
-    lr_turn(RIGHT);
     log_message = 'R';
+    lr_turn(RIGHT);
     wait(1.0);
     
+    log_message = 'b';
     car.goStraightCalib(-10);
-    log_message = 'B';
     wait(1);
     car.stop();
     
     identify_picture();
     
-    ping_WalkUntil(15, FORWARD);
     log_message = 'F';
+    ping_WalkUntil(15, FORWARD);
     wait(1.0);
     
-    lr_turn(RIGHT);
     log_message = 'R';
+    lr_turn(RIGHT);
     wait(1.0);
 
-    car.goStraightCalib(10);
     log_message = 'F';
+    car.goStraightCalib(10);
     wait(5);
 
+    log_message = 'F';
     ping_WalkUntil(35, FORWARD);
     wait(0.5);
 
-    lr_turn(RIGHT);
     log_message = 'R';
+    lr_turn(RIGHT);
     wait(1.0);
 
-    ping_WalkUntil(12.5, FORWARD);
     log_message = 'F';
+    ping_WalkUntil(12.5, FORWARD);
     car.stop();
     wait(1);
 
-    lr_turn(RIGHT);
     log_message = 'R';
+    lr_turn(RIGHT);
     wait(1.0);
 
-    car.goStraightCalib(10);
     log_message = 'F';
+    car.goStraightCalib(10);
     wait(2.35);
 
-    car.stop();
     log_message = 'S';
+    car.stop();
     wait(1.0);
     
-    lr_turn(RIGHT);
     log_message = 'R';
+    lr_turn(RIGHT);
     wait(1.0);
     
-    car.goStraightCalib(10);
     log_message = 'F';
+    car.goStraightCalib(10);
     wait(2.5);
 
     identify_object();
     wait(1.0);
 
     // go to the end
-    lr_turn(LEFT);
     log_message = 'L';
+    lr_turn(LEFT);
     wait(1.0);
     
-    
-    car.goStraightCalib(10);
     log_message = 'F';
+    car.goStraightCalib(10);
     wait(2.35);
 
-    lr_turn(LEFT);
     log_message = 'L';
+    lr_turn(LEFT);
     wait(0.5);
 
-    
+    log_message = 'F';
     ping_WalkUntil(15, FORWARD);    
-    log_message = 'F';
     wait(0.5);
 
-    lr_turn(RIGHT);
     log_message = 'R';
+    lr_turn(RIGHT);
     wait(0.5);
     
+    log_message = 'F';
     ping_WalkUntil(15, FORWARD);
-    log_message = 'F';
     wait(0.5);
 
-    lr_turn(RIGHT);
     log_message = 'R';
+    lr_turn(RIGHT);
     wait(0.5);
 
-    car.goStraightCalib(10);
     log_message = 'F';
+    car.goStraightCalib(10);
     wait(15.0);
     car.stop();
+
+    return 0;
 }
 
 void ping_WalkUntil(float distance, bool Is_Forward)
@@ -243,17 +252,15 @@ void lr_turn(bool Is_Left)
 void log(void) {
     int count = 0;
     while (1) {
-        if (!other_mission) {
-            xbee.printf("%c\r\n", log_message, count++);
-            wait(1.0);
-        }
+        if (!other_mission)
+            xbee.printf("%d %c\r\n", count++, log_message);
+        wait(1.0);
     }
 }
 
 void identify_object(void)
 {
-    other_mission = true;
-
+    log_message = 'C';
     float value[3];
     float difference_1, difference_2;
 
@@ -292,7 +299,7 @@ void identify_object(void)
     car.stop();
     
     difference_1 = value[1] - value[0];
-    
+    other_mission = true;
     if (difference_1 <= 0)
         xbee.printf("M\r\n");
     else {
@@ -305,7 +312,7 @@ void identify_object(void)
                 xbee.printf("Equal triangle\r\n");
         }
     }
-
+    other_mission = false;
     // mission complete
     for (int i = 0; i < 5; i++) {
         Led = 0;
@@ -313,25 +320,26 @@ void identify_object(void)
         Led = 1;
         wait(0.1);
     }
-    other_mission = false;
 }
 
 void identify_picture(void)
 {
-    other_mission = true;
-    
+    log_message = 'B';
     char s[25];
     sprintf(s, "image_classification");
     OpenMv.puts(s);
     wait(5.0);
     
+    other_mission = true;
+
     // will get only one number
     if (OpenMv.readable()) {
         char recv = OpenMv.getc();
         xbee.putc(recv);
         xbee.printf("\r\n");
     }
-
+    
+    other_mission = false;
     // mission complete
     for (int i = 0; i < 5; i++) {
         Led = 0;
@@ -339,13 +347,12 @@ void identify_picture(void)
         Led = 1;
         wait(0.1);
     }
-    other_mission = false;
 }
 
 
 void identify_matrix(void)
 {
-    other_mission = true;
+    log_message = 'A';
     char s[20];
     sprintf(s, "data_matrix");
     OpenMv.puts(s);
@@ -354,6 +361,7 @@ void identify_matrix(void)
     OpenMv.puts(s);
     wait(1);
 
+    other_mission = true;
     if (OpenMv.readable()) {
         char temp;
         char rev[20];
@@ -373,7 +381,7 @@ void identify_matrix(void)
         }
         xbee.printf("\r\n");
     }
-
+    other_mission = false;
     // mission complete
     for (int i = 0; i < 5; i++) {
         Led = 0;
@@ -381,5 +389,4 @@ void identify_matrix(void)
         Led = 1;
         wait(0.1);
     }
-    other_mission = false;
 }
