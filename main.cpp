@@ -136,7 +136,7 @@ int main(void)
     wait(5);
 
     log_message = 'F';
-    ping_WalkUntil(35, FORWARD);
+    ping_WalkUntil(30, FORWARD);
     wait(0.5);
 
     log_message = 'R';
@@ -241,13 +241,13 @@ void lr_turn(bool Is_Left)
         car.servo0.set_speed_by_cm(-10);
         car.servo1.set_speed_by_cm(-10);
         car.controlWheel();
-        wait(1.25);
+        wait(1.1);
     }
     else {
         car.servo0.set_speed_by_cm(10);
         car.servo1.set_speed_by_cm(10);
         car.controlWheel();
-        wait(1.3);
+        wait(1.2);
     }
     car.stop();
 }
