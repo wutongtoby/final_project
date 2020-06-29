@@ -57,10 +57,10 @@ int main(void)
     // set the LED
     Led = 1;
 
-    // for D13 
+    // for D13 left, servo0
     double pwm_table0[] = {-40, -32, -24, -16, -8, 0, 8, 16, 24, 32, 40};
     double speed_table0[] = {-19.059, -14.355, -10.367, -5.343, -1.754, 0, 2.153, 7.018, 11.165, 16.109, 20.096};     
-    // for D10
+    // for D10 right, servo1
     double pwm_table1[] = {-120, -96, -72, -48, -24, 0, 24, 48, 72, 96, 120};
     double speed_table1[] = {-16.108, -15.312, -13.557, -9.950, -4.227, 0, 4.944, 10.367, 13.956, 15.631, 16.348};
     
@@ -99,7 +99,7 @@ int main(void)
     lr_turn(RIGHT);
     wait(0.5);
     
-    log_message = 'B';
+    log_message = 'b';
     ping_WalkUntil(35, BACKWARD);
     wait(0.5);
 
@@ -176,6 +176,10 @@ int main(void)
     car.goStraightCalib(10);
     wait(2.5);
 
+    log_message = 'S';
+    car.stop();
+    wait(1.0);
+
     identify_object();
     wait(1.0);
 
@@ -210,16 +214,22 @@ int main(void)
 
     log_message = 'F';
     car.goStraightCalib(10);
-    wait(15.0);
+    wait(12.0);
     car.stop();
 
+    other_mission = true;
+    xbee.printf("The End\r\n");
     return 0;
 }
 
 void ping_WalkUntil(float distance, bool Is_Forward)
 {
-    if (Is_Forward)
-        car.goStraightCalib(10);
+    if (Is_Forward) {
+        car.servo0.set_speed_by_cm(10);
+        car.servo1.set_speed_by_cm(-9.8);
+        car.controlWheel();
+    }
+        //car.goStraightCalib(10);
     else 
         car.goStraightCalib(-10);
 
@@ -239,13 +249,13 @@ void lr_turn(bool Is_Left)
         car.servo0.set_speed_by_cm(-10);
         car.servo1.set_speed_by_cm(-10);
         car.controlWheel();
-        wait(1.12);
+        wait(1.25);
     }
     else {
         car.servo0.set_speed_by_cm(10);
         car.servo1.set_speed_by_cm(10);
         car.controlWheel();
-        wait(1.12);
+        wait(1.3);
     }
     car.stop();
 }
@@ -302,15 +312,15 @@ void identify_object(void)
     difference_1 = value[1] - value[0];
     other_mission = true;
     if (difference_1 <= 0)
-        xbee.printf("M\r\n");
+        xbee.printf("The object is M\r\n");
     else {
         if (difference_2 >= 0)
-            xbee.printf("Right triangle\r\n");
+            xbee.printf("The object is Right triangle\r\n");
         else {
             if (abs(difference_1) - abs(difference_2) < 2)
-                xbee.printf("Square\r\n");
+                xbee.printf("The object is Square\r\n");
             else 
-                xbee.printf("Equal triangle\r\n");
+                xbee.printf("The object is Equal triangle\r\n");
         }
     }
     other_mission = false;
@@ -336,52 +346,11 @@ void identify_picture(void)
     // will get only one number
     if (OpenMv.readable()) {
         char recv = OpenMv.getc();
+        xbee.printf("The number is ");
         xbee.putc(recv);
         xbee.printf("\r\n");
     }
     
-    other_mission = false;
-    // mission complete
-    for (int i = 0; i < 5; i++) {
-        Led = 0;
-        wait(0.1);
-        Led = 1;
-        wait(0.1);
-    }
-}
-
-
-void identify_matrix(void)
-{
-    log_message = 'A';
-    char s[20];
-    sprintf(s, "data_matrix");
-    OpenMv.puts(s);
-    wait(2.0);
-    sprintf(s, "stop");
-    OpenMv.puts(s);
-    wait(1);
-
-    other_mission = true;
-    if (OpenMv.readable()) {
-        char temp;
-        char rev[20];
-        int count = 0;
-        
-        while (1) {
-            temp = OpenMv.getc();
-            if (temp != '\r') {
-                rev[count++] = temp;
-            }
-            else {
-                break;
-            }
-        }
-        for (int i = 0; i < count; i++) {
-            xbee.putc(rev[i]);
-        }
-        xbee.printf("\r\n");
-    }
     other_mission = false;
     // mission complete
     for (int i = 0; i < 5; i++) {
