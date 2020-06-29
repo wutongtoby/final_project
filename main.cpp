@@ -61,8 +61,9 @@ int main(void)
     double pwm_table0[] = {-40, -32, -24, -16, -8, 0, 8, 16, 24, 32, 40};
     double speed_table0[] = {-19.059, -14.355, -10.367, -5.343, -1.754, 0, 2.153, 7.018, 11.165, 16.109, 20.096};     
     // for D10
-    double speed_table1[] = {-16.108, -15.312, -13.557, -9.950, -4.227, 0, 4.944, 10.367, 13.956, 15.631, 16.348};
     double pwm_table1[] = {-120, -96, -72, -48, -24, 0, 24, 48, 72, 96, 120};
+    double speed_table1[] = {-16.108, -15.312, -13.557, -9.950, -4.227, 0, 4.944, 10.367, 13.956, 15.631, 16.348};
+    
 
     // first and fourth argument : length of table
     car.setCalibTable(11, pwm_table0, speed_table0, 11, pwm_table1, speed_table1);
@@ -91,7 +92,7 @@ int main(void)
     wait(4.5);
     
     log_message = 'S';
-    car.stop()
+    car.stop();
     wait(1);
     
     log_message = 'R';

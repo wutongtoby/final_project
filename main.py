@@ -11,7 +11,7 @@ pyb.LED(BLUE_LED_PIN).off()
 
 uart = pyb.UART(3,9600,timeout_char=1000)
 uart.init(9600,bits=8,parity = None, stop=1, timeout_char=1000)
-tmp = ""
+
 
 def image_classification():
     pyb.LED(GREEN_LED_PIN).off()
@@ -33,27 +33,7 @@ def image_classification():
     pyb.LED(GREEN_LED_PIN).on()
     return labels[obj.output().index(max(obj.output()))]
 
-def data_matrix():
-    pyb.LED(GREEN_LED_PIN).off()
-    pyb.LED(RED_LED_PIN).on()
-    sensor.reset()
-    sensor.set_pixformat(sensor.RGB565)
-    sensor.set_framesize(sensor.QVGA)
-    sensor.skip_frames(time = 2000)
-    sensor.set_auto_gain(False)  # must turn this off to prevent image washout...
-    sensor.set_auto_whitebal(False)  # must turn this off to prevent image washout...
-
-    img = sensor.snapshot()
-    img.lens_corr(1.8) # strength of 1.8 is good for the 2.8mm lens.
-
-    matrices = img.find_datamatrices()
-    pyb.LED(RED_LED_PIN).off()
-    pyb.LED(GREEN_LED_PIN).on()
-    for matrix in matrices:
-        return str((180 * matrix.rotation()) / math.pi)
-    return "no_matrix"
-
-last_angle = ""
+tmp = ""
 
 while(1):
     a = uart.readline()
@@ -62,17 +42,8 @@ while(1):
         print(tmp)
     #else:
      #   print("none")
-
     if tmp == "image_classification":
         tmp = ""
         label = image_classification()
         print(label)
         uart.write(label.encode())
-
-    if tmp == "data_matrix":
-        last_angle = data_matrix() + "\r"
-
-    if tmp == "data_matrixstop":
-        tmp = ""
-        print(last_angle.encode())
-        uart.write(last_angle.encode())
