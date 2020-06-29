@@ -32,7 +32,6 @@ Serial OpenMv(D12, D11); // Tx, Rx
 // LED
 DigitalOut Led(LED1);
 
-void identify_matrix(void); // A
 void identify_picture(void); // B
 void identify_object(void);  // C
 
@@ -69,13 +68,6 @@ int main(void)
     car.setCalibTable(11, pwm_table0, speed_table0, 11, pwm_table1, speed_table1);
 
     // start 
-    
-    // get the information of matrix at 25cm
-    //log_message = 'F';
-    //ping_WalkUntil(25, FORWARD);
-
-    //identify_matrix();
-    //wait(1.0);
     
     // go until at the front of wall
     log_message = 'F';
