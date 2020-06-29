@@ -1,3 +1,11 @@
+// F = forward
+// b = backward
+// L = turn left
+// R = turn right
+// S = stop
+// B = mission B (identify the number by OpenMv)
+// C = mission C (identify the object by ping)
+
 0 Begin
 1 F
 2 L
